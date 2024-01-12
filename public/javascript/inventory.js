@@ -28,19 +28,36 @@ const inventoryManager = {
                 if (message.toLowerCase().startsWith(chatCommands.addToInventory)) {
                     //extract the portion in quotes that should have our item and then remove the quotes
                     var itemNameInQuotes = message.match(/"(.*?)"/);
+
                     if (itemNameInQuotes != null) {
                         var itemName = itemNameInQuotes[1].replace(/["]/g, "").trim();
 
                         //extract the quantity number from the end of the command
                         var quantity = message.match(/\d+$/);
-                        if(quantity != null) {
+                        if (quantity != null) {
                             var quantityAsInt = parseInt(quantity[0]);
 
                             inventoryManager.addItemToInventory(itemName, quantityAsInt);
                         }
                     }
                 }
-                else if(user['username'].toLowerCase() === "streamlootsbot") {
+                else if (message.toLowerCase().startsWith(chatCommands.removeFromInventory)) {
+                    //extract the portion in quotes that should have our item and then remove the quotes
+                    var itemNameInQuotes = message.match(/"(.*?)"/);
+
+                    if (itemNameInQuotes != null) {
+                        var itemName = itemNameInQuotes[1].replace(/["]/g, "").trim();
+
+                        //extract the quantity number from the end of the command
+                        var quantity = message.match(/\d+$/);
+                        if (quantity != null) {
+                            var quantityAsInt = parseInt(quantity[0]);
+
+                            inventoryManager.removeItemFromInventory(itemName, quantityAsInt);
+                        }
+                    }
+                }
+                else if (user['username'].toLowerCase() === "streamlootsbot") {
                 //else {
                     inventoryManager.items.forEach(item => {
                         if (message.includes(item)) {
@@ -81,6 +98,28 @@ const inventoryManager = {
                 $("#inventory").append([
                     { title: itemName, amount: inventoryManager.inventory[itemIndex] }
                 ].map(inventoryManager.itemTemplate).join(''));
+            }
+        }
+        else {
+            console.log("Not among allowed inventory items");
+        }
+
+        console.log(inventoryManager.inventory);
+    },
+    removeItemFromInventory: function (itemName, quantityToRemove = 1) {
+        var itemIndex = inventoryManager.items.indexOf(itemName);
+        var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
+
+        if (itemIndex != -1 && inventoryManager.inventory[itemIndex] >= 0) {
+            inventoryManager.inventory[itemIndex] = Math.max(inventoryManager.inventory[itemIndex] - quantityToRemove, 0);
+
+            if (inventoryManager.inventory[itemIndex] > 0) {
+                $("#" + formattedItemName).replaceWith([
+                    { title: itemName, amount: inventoryManager.inventory[itemIndex] }
+                ].map(inventoryManager.itemTemplate).join(''));
+            }
+            else {
+                $("#" + formattedItemName).remove();
             }
         }
         else {
