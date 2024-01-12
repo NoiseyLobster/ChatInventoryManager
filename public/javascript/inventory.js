@@ -38,17 +38,17 @@ const inventoryManager = {
                         if (quantity != null) {
                             var quantityAsInt = parseInt(quantity[0]);
 
-                            if(message.toLowerCase().startsWith(chatCommands.addToInventory)) {
+                            if (message.toLowerCase().startsWith(chatCommands.addToInventory)) {
                                 inventoryManager.addItemToInventory(itemName, quantityAsInt);
                             }
-                            else if(message.toLowerCase().startsWith(chatCommands.removeFromInventory)) {
+                            else if (message.toLowerCase().startsWith(chatCommands.removeFromInventory)) {
                                 inventoryManager.removeItemFromInventory(itemName, quantityAsInt);
                             }
                         }
                     }
                 }
                 else if (user['username'].toLowerCase() === "streamlootsbot") {
-                //else {
+                    //else {
                     inventoryManager.items.forEach(item => {
                         if (message.includes(item)) {
                             inventoryManager.addItemToInventory(item);
@@ -60,7 +60,30 @@ const inventoryManager = {
     },
     items: [
         "Orange Julius",
-        "Potion of Chaos Magic"
+        "Potion of Chaos Magic",
+        "Bucket of Swamp Water",
+        "Swamp Glider Legs",
+        "Nethergill Puffcap",
+        "Moss Covered Pebble",
+        "Blister Berry",
+        "Blightsurge Fruit",
+        "Mirebind Creeper Vine",
+        "Potion of Enlightenment",
+        "Potion of Elemental Resistance",
+        "Purification Potion",
+        "Hale Potion",
+        "Vim Potion",
+        "Potion of Chaos Magic",
+        "Potion of Hubris",
+        "Golden Crested Finch Song",
+        "Whispering Wind Crystal",
+        "Scroll of Deathlight",
+        "Orange Julius",
+        "Awkward Antony",
+        "Swamp Carrot",
+        "Letter of Commendation",
+        "Liminal Halite",
+        "Nibiru Leaf"
     ],
     inventory: [],
     itemTemplate: ({ title, amount }) => `
