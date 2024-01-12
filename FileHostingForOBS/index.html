@@ -60,8 +60,10 @@
                     options: { debug: false },
                     connection: { cluster: "aws", reconnect: true },
                     channels: [vote.channel]
-                })
+                });
+
                 inventoryManager.client.connect();
+
                 inventoryManager.client.on('chat', function (channel, user, message, self) {
                     if ((user['username'] === vote.channel || user.mod)) {
                         if (message.toLowerCase().startsWith(chatCommands.commandPrefix)) {
@@ -93,7 +95,7 @@
                             });
                         }
                     }
-                })
+                });
             },
             items: [
                 "Orange Julius",
@@ -129,7 +131,7 @@
                     <div class="col-1 text-center">-</div>
                     <div class="col-10">${title}</div>
                 </div>
-                `,
+            `,
             addItemToInventory: function (itemName, quantityToAdd = 1) {
                 var itemIndex = inventoryManager.items.indexOf(itemName);
                 var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
@@ -181,6 +183,10 @@
             client: {},
             channel: window.location.hash.slice(1).toLowerCase()
         }
+
+        $(document).ready(function() {
+            inventoryManager.init();
+        });
     </script>
 </body>
 
