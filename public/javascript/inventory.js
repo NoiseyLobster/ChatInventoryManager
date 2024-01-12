@@ -9,6 +9,7 @@ twitch.onAuthorized(function (auth) {
 });
 
 const chatCommands = {
+    commandPrefix: "!",
     addToInventory: "!add",
     removeFromInventory: "!del"
 }
@@ -25,7 +26,7 @@ const inventoryManager = {
         inventoryManager.client.on('chat', function (channel, user, message, self) {
             //if (user['username'] === "noiseylobster13") {
             if ((user['username'] === vote.channel || user.mod)) {
-                if (message.toLowerCase().startsWith(chatCommands.addToInventory)) {
+                if (message.toLowerCase().startsWith(chatCommands.commandPrefix)) {
                     //extract the portion in quotes that should have our item and then remove the quotes
                     var itemNameInQuotes = message.match(/"(.*?)"/);
 
@@ -37,23 +38,12 @@ const inventoryManager = {
                         if (quantity != null) {
                             var quantityAsInt = parseInt(quantity[0]);
 
-                            inventoryManager.addItemToInventory(itemName, quantityAsInt);
-                        }
-                    }
-                }
-                else if (message.toLowerCase().startsWith(chatCommands.removeFromInventory)) {
-                    //extract the portion in quotes that should have our item and then remove the quotes
-                    var itemNameInQuotes = message.match(/"(.*?)"/);
-
-                    if (itemNameInQuotes != null) {
-                        var itemName = itemNameInQuotes[1].replace(/["]/g, "").trim();
-
-                        //extract the quantity number from the end of the command
-                        var quantity = message.match(/\d+$/);
-                        if (quantity != null) {
-                            var quantityAsInt = parseInt(quantity[0]);
-
-                            inventoryManager.removeItemFromInventory(itemName, quantityAsInt);
+                            if(message.toLowerCase().startsWith(chatCommands.addToInventory)) {
+                                inventoryManager.addItemToInventory(itemName, quantityAsInt);
+                            }
+                            else if(message.toLowerCase().startsWith(chatCommands.removeFromInventory)) {
+                                inventoryManager.removeItemFromInventory(itemName, quantityAsInt);
+                            }
                         }
                     }
                 }
