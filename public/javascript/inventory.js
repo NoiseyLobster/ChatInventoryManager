@@ -23,15 +23,24 @@ const inventoryManager = {
                 inventoryManager.items.forEach(item => {
                     if (message.includes(item)) {
                         foundItem = true;
+                        var itemIndex = inventoryManager.items.indexOf(item);
 
-                        if ($(".item-name").is("#" + item.replace(/ /g,"_"))) {
-                            console.log("already there");
-                        }
-                        else {
-                            $("#inventory").append([
-                                { title: item }
+                        if ($(".inventory-item").is("#" + item.replace(/ /g, "_"))) {
+                            var amount = inventoryManager.inventory[itemIndex] += 1;
+                            
+                            $("#" + item.replace(/ /g, "_")).replaceWith([
+                                { title: item, amount:  amount}
                             ].map(inventoryManager.itemTemplate).join(''));
                         }
+                        else {
+                            var amount = inventoryManager.inventory[itemIndex] = 1;
+                            
+                            $("#inventory").append([
+                                { title: item, amount:  amount}
+                            ].map(inventoryManager.itemTemplate).join(''));
+                        }
+
+                        console.log(inventoryManager.inventory);
                     }
                 });
 
@@ -44,9 +53,10 @@ const inventoryManager = {
         "Orange Julius",
         "Potion of Chaos Magic"
     ],
-    itemTemplate: ({ url, title }) => `
-    <a class="nav-link inventory-item" href="#">
-        <h2 class="item-name" id="${title.replace(/ /g,"_")}">${title}</h2>
+    inventory: [],
+    itemTemplate: ({ title, amount }) => `
+    <a class="nav-link inventory-item" id="${title.replace(/ /g, "_")}" href="#">
+        <h2 class="item-name">${title} <span class="amount">(${amount})</span></h2>
     </a>
     `,
     client: {},
