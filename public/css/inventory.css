@@ -1,0 +1,14 @@
+h2 {
+    font-family: 'Asul', serif; 
+    margin-top: 0.5rem !important;
+}
+
+html,
+body,
+#container {
+    height: 100%;
+}
+
+#container {
+    background-color: #7bc883b3;
+}
