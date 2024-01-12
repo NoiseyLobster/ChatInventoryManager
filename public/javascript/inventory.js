@@ -40,7 +40,7 @@ const inventoryManager = {
                     }
                 }
                 else if (user['username'].toLowerCase() === "streamlootsbot") {
-                    //else {
+                //else {
                     inventoryManager.items.forEach(item => {
                         if (message.includes(item)) {
                             inventoryManager.addItemToInventory(item);
@@ -51,8 +51,6 @@ const inventoryManager = {
         })
     },
     items: [
-        "Orange Julius",
-        "Potion of Chaos Magic",
         "Bucket of Swamp Water",
         "Swamp Glider Legs",
         "Nethergill Puffcap",
