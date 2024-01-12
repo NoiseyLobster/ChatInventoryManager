@@ -57,9 +57,11 @@ const inventoryManager = {
     ],
     inventory: [],
     itemTemplate: ({ title, amount }) => `
-    <a class="nav-link inventory-item" id="${title.replace(/ /g, "_")}" href="#">
-        <h2 class="item-name">${title} <span class="amount">(${amount})</span></h2>
-    </a>
+    <div class="row inventory-item" id="${title.replace(/ /g, "_")}">
+        <div class="col-1 text-center">${amount}</div>
+        <div class="col-1 text-center">-</div>
+        <div class="col-10">${title}</div>
+    </div>
     `,
     client: {},
     channel: window.location.hash.slice(1).toLowerCase()
