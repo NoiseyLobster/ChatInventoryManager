@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Inventory Manager</title>
+    <meta charset="UTF-8" />
+
+    <!-- Stylesheets -->
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand+SC&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Asul&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <style>
+        html,
+        body,
+        #container {
+            max-width: 100%;
+            height: 100%;
+        }
+
+        #container {
+            width: 400px;
+            background-color: #90c2a6;
+            opacity: 85%;
+            color: #fff;
+            font-family: 'Patrick Hand SC', cursive;
+            font-size: 22px;
+        }
+
+        #inventory {
+            padding-left: 5px;
+        }
+
+        #inventory .row {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="inventory">
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <script src="javascript/jquery-3.7.1.min.js"></script>
+    <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+    <script src="javascript/tmi.min.js"></script>
+
+    <script>
+        const inventoryManager = {
+            init: () => {
+                inventoryManager.client = new tmi.Client({
+                    options: { debug: false },
+                    connection: { cluster: "aws", reconnect: true },
+                    channels: [vote.channel]
+                })
+                inventoryManager.client.connect();
+                inventoryManager.client.on('chat', function (channel, user, message, self) {
+                    if ((user['username'] === vote.channel || user.mod)) {
+                        if (message.toLowerCase().startsWith(chatCommands.commandPrefix)) {
+                            //extract the portion in quotes that should have our item and then remove the quotes
+                            var itemNameInQuotes = message.match(/"(.*?)"/);
+
+                            if (itemNameInQuotes != null) {
+                                var itemName = itemNameInQuotes[1].replace(/["]/g, "").trim();
+
+                                //extract the quantity number from the end of the command
+                                var quantity = message.match(/\d+$/);
+                                if (quantity != null) {
+                                    var quantityAsInt = parseInt(quantity[0]);
+
+                                    if (message.toLowerCase().startsWith(chatCommands.addToInventory)) {
+                                        inventoryManager.addItemToInventory(itemName, quantityAsInt);
+                                    }
+                                    else if (message.toLowerCase().startsWith(chatCommands.removeFromInventory)) {
+                                        inventoryManager.removeItemFromInventory(itemName, quantityAsInt);
+                                    }
+                                }
+                            }
+                        }
+                        else if (user['username'].toLowerCase() === "streamlootsbot") {
+                            inventoryManager.items.forEach(item => {
+                                if (message.includes(item)) {
+                                    inventoryManager.addItemToInventory(item);
+                                }
+                            });
+                        }
+                    }
+                })
+            },
+            items: [
+                "Orange Julius",
+                "Potion of Chaos Magic",
+                "Bucket of Swamp Water",
+                "Swamp Glider Legs",
+                "Nethergill Puffcap",
+                "Moss Covered Pebble",
+                "Blister Berry",
+                "Blightsurge Fruit",
+                "Mirebind Creeper Vine",
+                "Potion of Enlightenment",
+                "Potion of Elemental Resistance",
+                "Purification Potion",
+                "Hale Potion",
+                "Vim Potion",
+                "Potion of Chaos Magic",
+                "Potion of Hubris",
+                "Golden Crested Finch Song",
+                "Whispering Wind Crystal",
+                "Scroll of Deathlight",
+                "Orange Julius",
+                "Awkward Antony",
+                "Swamp Carrot",
+                "Letter of Commendation",
+                "Liminal Halite",
+                "Nibiru Leaf"
+            ],
+            inventory: [],
+            itemTemplate: ({ title, amount }) => `
+                <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
+                    <div class="col-1 text-center">${amount}</div>
+                    <div class="col-1 text-center">-</div>
+                    <div class="col-10">${title}</div>
+                </div>
+                `,
+            addItemToInventory: function (itemName, quantityToAdd = 1) {
+                var itemIndex = inventoryManager.items.indexOf(itemName);
+                var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
+
+                if (itemIndex != -1) {
+                    if ($(".inventory-item").is("#" + formattedItemName)) {  //we already have at least one of these in inventory
+                        inventoryManager.inventory[itemIndex] += quantityToAdd;
+
+                        $("#" + formattedItemName).replaceWith([
+                            { title: itemName, amount: inventoryManager.inventory[itemIndex] }
+                        ].map(inventoryManager.itemTemplate).join(''));
+                    }
+                    else {                                                   //we dont have any in inventory yet
+                        inventoryManager.inventory[itemIndex] = quantityToAdd;
+
+                        $("#inventory").append([
+                            { title: itemName, amount: inventoryManager.inventory[itemIndex] }
+                        ].map(inventoryManager.itemTemplate).join(''));
+                    }
+                }
+                else {
+                    console.log("Not among allowed inventory items");
+                }
+
+                console.log(inventoryManager.inventory);
+            },
+            removeItemFromInventory: function (itemName, quantityToRemove = 1) {
+                var itemIndex = inventoryManager.items.indexOf(itemName);
+                var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
+
+                if (itemIndex != -1 && inventoryManager.inventory[itemIndex] >= 0) {
+                    inventoryManager.inventory[itemIndex] = Math.max(inventoryManager.inventory[itemIndex] - quantityToRemove, 0);
+
+                    if (inventoryManager.inventory[itemIndex] > 0) {
+                        $("#" + formattedItemName).replaceWith([
+                            { title: itemName, amount: inventoryManager.inventory[itemIndex] }
+                        ].map(inventoryManager.itemTemplate).join(''));
+                    }
+                    else {
+                        $("#" + formattedItemName).remove();
+                    }
+                }
+                else {
+                    console.log("Not among allowed inventory items");
+                }
+
+                console.log(inventoryManager.inventory);
+            },
+            client: {},
+            channel: window.location.hash.slice(1).toLowerCase()
+        }
+    </script>
+</body>
+
+</html>
