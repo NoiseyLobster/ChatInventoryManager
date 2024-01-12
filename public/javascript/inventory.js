@@ -13,11 +13,13 @@ const inventoryManager = {
         inventoryManager.client = new tmi.Client({
             options: { debug: false },
             connection: { cluster: "aws", reconnect: true },
-            channels: ["noiseylobster13"]
+            channels: [vote.channel]
+            //channels: ["noiseylobster13"]
         })
         inventoryManager.client.connect();
         inventoryManager.client.on('chat', function (channel, user, message, self) {
-            if (user['username'] === "noiseylobster13") {
+            //if (user['username'] === "noiseylobster13") {
+            if ((user['username'] === vote.channel || user.mod) && message === "!vote") {
                 var foundItem = false;
 
                 inventoryManager.items.forEach(item => {
@@ -27,16 +29,16 @@ const inventoryManager = {
 
                         if ($(".inventory-item").is("#" + item.replace(/ /g, "_"))) {
                             var amount = inventoryManager.inventory[itemIndex] += 1;
-                            
+
                             $("#" + item.replace(/ /g, "_")).replaceWith([
-                                { title: item, amount:  amount}
+                                { title: item, amount: amount }
                             ].map(inventoryManager.itemTemplate).join(''));
                         }
                         else {
                             var amount = inventoryManager.inventory[itemIndex] = 1;
-                            
+
                             $("#inventory").append([
-                                { title: item, amount:  amount}
+                                { title: item, amount: amount }
                             ].map(inventoryManager.itemTemplate).join(''));
                         }
 
@@ -60,4 +62,5 @@ const inventoryManager = {
     </a>
     `,
     client: {},
+    channel: window.location.hash.slice(1).toLowerCase()
 }
