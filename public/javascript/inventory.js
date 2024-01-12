@@ -19,7 +19,7 @@ const inventoryManager = {
         inventoryManager.client.connect();
         inventoryManager.client.on('chat', function (channel, user, message, self) {
             //if (user['username'] === "noiseylobster13") {
-            if ((user['username'] === vote.channel || user.mod) && message === "!vote") {
+            if ((user['username'] === vote.channel || user.mod)) {
                 var foundItem = false;
 
                 inventoryManager.items.forEach(item => {
