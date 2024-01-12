@@ -8,6 +8,11 @@ twitch.onAuthorized(function (auth) {
     inventoryManager.init();
 });
 
+const chatCommands = {
+    addToInventory: "!add",
+    removeFromInventory: "!del"
+}
+
 const inventoryManager = {
     init: () => {
         inventoryManager.client = new tmi.Client({
@@ -20,33 +25,28 @@ const inventoryManager = {
         inventoryManager.client.on('chat', function (channel, user, message, self) {
             //if (user['username'] === "noiseylobster13") {
             if ((user['username'] === vote.channel || user.mod)) {
-                var foundItem = false;
+                if (message.toLowerCase().startsWith(chatCommands.addToInventory)) {
+                    //extract the portion in quotes that should have our item and then remove the quotes
+                    var itemNameInQuotes = message.match(/"(.*?)"/);
+                    if (itemNameInQuotes != null) {
+                        var itemName = itemNameInQuotes[1].replace(/["]/g, "").trim();
 
-                inventoryManager.items.forEach(item => {
-                    if (message.includes(item)) {
-                        foundItem = true;
-                        var itemIndex = inventoryManager.items.indexOf(item);
+                        //extract the quantity number from the end of the command
+                        var quantity = message.match(/\d+$/);
+                        if(quantity != null) {
+                            var quantityAsInt = parseInt(quantity[0]);
 
-                        if ($(".inventory-item").is("#" + item.replace(/ /g, "_"))) {
-                            var amount = inventoryManager.inventory[itemIndex] += 1;
-
-                            $("#" + item.replace(/ /g, "_")).replaceWith([
-                                { title: item, amount: amount }
-                            ].map(inventoryManager.itemTemplate).join(''));
+                            inventoryManager.addItemToInventory(itemName, quantityAsInt);
                         }
-                        else {
-                            var amount = inventoryManager.inventory[itemIndex] = 1;
-
-                            $("#inventory").append([
-                                { title: item, amount: amount }
-                            ].map(inventoryManager.itemTemplate).join(''));
-                        }
-
-                        console.log(inventoryManager.inventory);
                     }
-                });
-
-                if (!foundItem) {
+                }
+                else if(user['username'].toLowerCase() === "streamlootsbot") {
+                //else {
+                    inventoryManager.items.forEach(item => {
+                        if (message.includes(item)) {
+                            inventoryManager.addItemToInventory(item);
+                        }
+                    });
                 }
             }
         })
@@ -57,12 +57,38 @@ const inventoryManager = {
     ],
     inventory: [],
     itemTemplate: ({ title, amount }) => `
-    <div class="row inventory-item" id="${title.replace(/ /g, "_")}">
+    <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
         <div class="col-1 text-center">${amount}</div>
         <div class="col-1 text-center">-</div>
         <div class="col-10">${title}</div>
     </div>
     `,
+    addItemToInventory: function (itemName, quantityToAdd = 1) {
+        var itemIndex = inventoryManager.items.indexOf(itemName);
+        var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
+
+        if (itemIndex != -1) {
+            if ($(".inventory-item").is("#" + formattedItemName)) {  //we already have at least one of these in inventory
+                inventoryManager.inventory[itemIndex] += quantityToAdd;
+
+                $("#" + formattedItemName).replaceWith([
+                    { title: itemName, amount: inventoryManager.inventory[itemIndex] }
+                ].map(inventoryManager.itemTemplate).join(''));
+            }
+            else {                                                   //we dont have any in inventory yet
+                inventoryManager.inventory[itemIndex] = quantityToAdd;
+
+                $("#inventory").append([
+                    { title: itemName, amount: inventoryManager.inventory[itemIndex] }
+                ].map(inventoryManager.itemTemplate).join(''));
+            }
+        }
+        else {
+            console.log("Not among allowed inventory items");
+        }
+
+        console.log(inventoryManager.inventory);
+    },
     client: {},
     channel: window.location.hash.slice(1).toLowerCase()
 }
