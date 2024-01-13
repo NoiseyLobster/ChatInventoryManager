@@ -40,8 +40,8 @@ const inventoryManager = {
                     }
                 }
                 else if (user['username'].toLowerCase() === "streamlootsbot") {
-                    //else {
-                    inventoryManager.items.forEach(item => {
+                //else {
+                    inventoryManager.getAllMagicItems().forEach(item => {
                         if (message.includes(item)) {
                             inventoryManager.addItemToInventory(item);
                         }
@@ -50,20 +50,24 @@ const inventoryManager = {
             }
         })
     },
-    items: [
+    potions: [
+        "Potion of Chaos Magic",
+        "Potion of Elemental Resistance",
+        "Potion of Enlightenment",
+        "Vim Potion",
+        "Hale Potion",
+        "Purification Potion"
+    ],
+    battleItems: [
         "Bucket of Swamp Water",
+        "Blister Berry",
         "Swamp Glider Legs",
         "Nethergill Puffcap",
-        "Moss Covered Pebble",
-        "Blister Berry",
+        "Moss Covered Pebble",        
         "Blightsurge Fruit",
-        "Mirebind Creeper Vine",
-        "Potion of Enlightenment",
-        "Potion of Elemental Resistance",
-        "Purification Potion",
-        "Hale Potion",
-        "Vim Potion",
-        "Potion of Chaos Magic",
+        "Mirebind Creeper Vine"
+    ],
+    uncategorizedItems: [  
         "Potion of Hubris",
         "Golden Crested Finch Song",
         "Whispering Wind Crystal",
@@ -75,16 +79,15 @@ const inventoryManager = {
         "Liminal Halite",
         "Nibiru Leaf"
     ],
+    getAllMagicItems: function() { return inventoryManager.potions.concat(inventoryManager.battleItems, inventoryManager.uncategorizedItems); },
     inventory: [],
     itemTemplate: ({ title, amount }) => `
     <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
-        <div class="col-1 text-center">${amount}</div>
-        <div class="col-1 text-center">-</div>
-        <div class="col-10">${title}</div>
+        <div class="col-auto">${title} (${amount})</div>
     </div>
     `,
     addItemToInventory: function (itemName, quantityToAdd = 1) {
-        var itemIndex = inventoryManager.items.indexOf(itemName);
+        var itemIndex = inventoryManager.getAllMagicItems().indexOf(itemName);
         var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
 
         if (itemIndex != -1) {
@@ -98,7 +101,9 @@ const inventoryManager = {
             else {                                                   //we dont have any in inventory yet
                 inventoryManager.inventory[itemIndex] = quantityToAdd;
 
-                $("#inventory").append([
+                var categoryID = inventoryManager.potions.includes(itemName) ? "#potion-inventory" : "#battle-item-inventory";
+
+                $("#inventory " + categoryID).append([
                     { title: itemName, amount: inventoryManager.inventory[itemIndex] }
                 ].map(inventoryManager.itemTemplate).join(''));
             }
@@ -110,7 +115,7 @@ const inventoryManager = {
         console.log(inventoryManager.inventory);
     },
     removeItemFromInventory: function (itemName, quantityToRemove = 1) {
-        var itemIndex = inventoryManager.items.indexOf(itemName);
+        var itemIndex = inventoryManager.getAllMagicItems().indexOf(itemName);
         var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
 
         if (itemIndex != -1 && inventoryManager.inventory[itemIndex] >= 0) {
