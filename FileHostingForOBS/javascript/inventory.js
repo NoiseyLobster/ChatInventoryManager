@@ -39,40 +39,93 @@ const inventoryManager = {
                             inventoryManager.removeItemFromInventory(itemName, quantity);
                             break;
                         case chatCommands.newPotionType:
-                            inventoryManager.createNewPotionType(itemName, quantity);
+                            inventoryManager.createNewItemType(itemName, "potion", quantity);
                             break;
                         case chatCommands.newBattleItemType:
-                            inventoryManager.createNewBattleItemType(itemName, quantity);
+                            inventoryManager.createNewItemType(itemName, "battleItem", quantity);
+                            break;
+                        case chatCommands.removeItemType:
+                            inventoryManager.removeItemType(itemName);
                             break;
                     }
                 }
                 else if (user['username'].toLowerCase() === "streamlootsbot") {
                 //else {
-                    inventoryManager.getAllMagicItems().forEach(item => {
-                        if (message.includes(item)) {
-                            inventoryManager.addItemToInventory(item);
+                    inventoryManager.magicItems.forEach(item => {
+                        if (message.includes(item.name)) {
+                            inventoryManager.addItemToInventory(item.name);
                         }
                     });
                 }
             }
         })
     },
-    potions: [
-        "Potion of Chaos Magic",
-        "Potion of Elemental Resistance",
-        "Potion of Enlightenment",
-        "Vim Potion",
-        "Hale Potion",
-        "Purification Potion"
-    ],
-    battleItems: [
-        "Bucket of Swamp Water",
-        "Blister Berry",
-        "Swamp Glider Legs",
-        "Nethergill Puffcap",
-        "Moss Covered Pebble",
-        "Blightsurge Fruit",
-        "Mirebind Creeper Vine"
+    magicItems: [
+        {
+            "name": "Potion of Chaos Magic",
+            "type": "potion",
+            "amount": 0
+        },
+        {
+            "name": "Potion of Elemental Resistance",
+            "type": "potion",
+            "amount": 0
+        },
+        {
+            "name": "Potion of Enlightenment",
+            "type": "potion",
+            "amount": 0
+        },
+        {
+            "name": "Vim Potion",
+            "type": "potion",
+            "amount": 0
+        },
+        {
+            "name": "Hale Potion",
+            "type": "potion",
+            "amount": 0
+        },
+        {
+            "name": "Purification Potion",
+            "type": "potion",
+            "amount": 0
+        },
+        {
+            "name": "Bucket of Swamp Water",
+            "type": "battleItem",
+            "amount": 0
+        },
+        {
+            "name": "Blister Berry",
+            "type": "battleItem",
+            "amount": 0
+        },
+        {
+            "name": "Swamp Glider Legs",
+            "type": "battleItem",
+            "amount": 0
+        },
+        {
+            "name": "Nethergill Puffcap",
+            "type": "battleItem",
+            "amount": 0
+        },
+        {
+            "name": "Moss Covered Pebble",
+            "type": "battleItem",
+            "amount": 0
+        },
+        {
+            "name": "Blightsurge Fruit",
+            "type": "battleItem",
+            "amount": 0
+        },
+        {
+            "name": "Mirebind Creeper Vine",
+            "type": "battleItem",
+            "amount": 0
+        }
     ],
     uncategorizedItems: [
         "Potion of Hubris",
@@ -86,84 +139,82 @@ const inventoryManager = {
         "Liminal Halite",
         "Nibiru Leaf"
     ],
-    getAllMagicItems: function () { return inventoryManager.potions.concat(inventoryManager.battleItems, inventoryManager.uncategorizedItems); },
-    inventory: [],
+    isMagicItem: function (itemName) {
+        var isMagicItem = false;
+
+        if (itemName != null && itemName != "") {
+            this.magicItems.forEach(item => {
+                if (item.name == itemName) {
+                    isMagicItem = true;
+                }
+            });
+        }
+
+        return isMagicItem;
+    },
     itemTemplate: ({ title, amount }) => `
     <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
         <div class="col-auto">${title} (${amount})</div>
     </div>
     `,
     addItemToInventory: function (itemName, quantityToAdd = 1) {
-        if(itemName != null) {
-            var itemIndex = inventoryManager.getAllMagicItems().indexOf(itemName);
-            var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
-            quantityToAdd = quantityToAdd ?? 1;
-    
-            if (itemIndex != -1) {
-                if ($(".inventory-item").is("#" + formattedItemName)) {  //we already have at least one of these in inventory
-                    inventoryManager.inventory[itemIndex] += quantityToAdd;
-    
-                    $("#" + formattedItemName).replaceWith([
-                        { title: itemName, amount: inventoryManager.inventory[itemIndex] }
-                    ].map(inventoryManager.itemTemplate).join(''));
-                }
-                else {                                                   //we dont have any in inventory yet
-                    inventoryManager.inventory[itemIndex] = quantityToAdd;
-    
-                    var categoryID = inventoryManager.potions.includes(itemName) ? "#potion-inventory" : "#battle-item-inventory";
-    
-                    $("#inventory " + categoryID).append([
-                        { title: itemName, amount: inventoryManager.inventory[itemIndex] }
-                    ].map(inventoryManager.itemTemplate).join(''));
-                }
-            }
-            else {
-                console.log("Not among allowed inventory items");
-            }
-        }
+        if (this.isMagicItem(itemName) && quantityToAdd > 0) {
+            this.magicItems.forEach(item => {
+                if (item.name == itemName) {
+                    var isInitialPurchase = item.amount == 0;
+                    item.amount += quantityToAdd;
 
-        console.log(inventoryManager.inventory);
+                    if (isInitialPurchase) {
+                        var categoryID = item.type == "potion" ? "#potion-inventory" : "#battle-item-inventory";
+
+                        $("#inventory " + categoryID).append([
+                            { title: itemName, amount: item.amount }
+                        ].map(this.itemTemplate).join(''));
+                    }
+                    else {
+                        var itemID = itemName.toLowerCase().replace(/ /g, "-");
+
+                        $("#" + itemID).replaceWith([
+                            { title: itemName, amount: item.amount }
+                        ].map(this.itemTemplate).join(''));
+                    }
+                }
+            });
+        }
     },
     removeItemFromInventory: function (itemName, quantityToRemove = 1) {
-        if(itemName != null) {
-            var itemIndex = inventoryManager.getAllMagicItems().indexOf(itemName);
-            var formattedItemName = itemName.toLowerCase().replace(/ /g, "-");
-            quantityToRemove = quantityToRemove ?? 1;
-    
-            if (itemIndex != -1 && inventoryManager.inventory[itemIndex] >= 0) {
-                inventoryManager.inventory[itemIndex] = Math.max(inventoryManager.inventory[itemIndex] - quantityToRemove, 0);
-    
-                if (inventoryManager.inventory[itemIndex] > 0) {
-                    $("#" + formattedItemName).replaceWith([
-                        { title: itemName, amount: inventoryManager.inventory[itemIndex] }
-                    ].map(inventoryManager.itemTemplate).join(''));
-                }
-                else {
-                    $("#" + formattedItemName).remove();
-                }
-            }
-            else {
-                console.log("Not among allowed inventory items");
-            }
-        }
+        if (this.isMagicItem(itemName) && quantityToRemove > 0) {
+            this.magicItems.forEach(item => {
+                if (item.name == itemName) {
+                    item.amount = Math.max(item.amount - quantityToRemove, 0);
 
-        console.log(inventoryManager.inventory);
-    },
-    createNewPotionType: function (itemName, initialAmount = 0) {
-        initialAmount = initialAmount ?? 0;
-
-        inventoryManager.potions.push(itemName);
-        if(initialAmount > 0) {
-            inventoryManager.addItemToInventory(itemName, initialAmount);
+                    var itemID = item.name.toLowerCase().replace(/ /g, "-");
+                    if(item.amount > 0) {
+                        $("#" + itemID).replaceWith([
+                            { title: itemName, amount: item.amount }
+                        ].map(this.itemTemplate).join(''));
+                    }
+                    else {
+                        $("#" + itemID).remove();
+                    }
+                }
+            });
         }
     },
-    createNewBattleItemType: function (itemName, initialAmount = 0) {
-        initialAmount = initialAmount ?? 0;
+    createNewItemType: function (itemName, itemType, initialAmount = 0) {
+        if (itemName != null && itemName != "" && itemType != null && itemType != "") {
+            this.magicItems.push({
+                "name": itemName,
+                "type": itemType,
+                "amount": 0
+            });
 
-        inventoryManager.battleItems.push(itemName);
-        if(initialAmount > 0) {
-            inventoryManager.addItemToInventory(itemName, initialAmount);
-        }        
+            if (initialAmount > 0) {
+                this.addItemToInventory(itemName, initialAmount);
+            }
+        }
+    },
+    removeItemType: function (itemName) {
     },
     client: {},
     channel: window.location.hash.slice(1).toLowerCase()
