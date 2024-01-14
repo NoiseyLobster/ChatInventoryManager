@@ -4,7 +4,7 @@ const chatCommands = {
     removeFromInventory: "!del",
     newPotionType: "!addPotionType",
     newBattleItemType: "!addBattleItemType",
-    removeItemType: "!removeItem"
+    removeItemType: "!removeItemType"
 }
 
 const inventoryManager = {
@@ -189,7 +189,7 @@ const inventoryManager = {
                     item.amount = Math.max(item.amount - quantityToRemove, 0);
 
                     var itemID = item.name.toLowerCase().replace(/ /g, "-");
-                    if(item.amount > 0) {
+                    if (item.amount > 0) {
                         $("#" + itemID).replaceWith([
                             { title: itemName, amount: item.amount }
                         ].map(this.itemTemplate).join(''));
@@ -215,6 +215,18 @@ const inventoryManager = {
         }
     },
     removeItemType: function (itemName) {
+        var indexToRemove = -1;
+
+        this.magicItems.forEach((item, itemIndex) => {
+            if (item.name == itemName) {
+                this.removeItemFromInventory(item.name, item.amount);
+                indexToRemove = itemIndex;
+            }
+        });
+
+        if (indexToRemove >= 0) {
+            this.magicItems.splice(indexToRemove, 1);
+        }
     },
     client: {},
     channel: window.location.hash.slice(1).toLowerCase()
