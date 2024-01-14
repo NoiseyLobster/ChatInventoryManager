@@ -7,15 +7,26 @@ const chatCommands = {
     removeItemType: "!removeItemType"
 }
 
+const magicItemStorageKey = "MAGIC_ITEM_STORAGE";
+
 const inventoryManager = {
     init: () => {
+        var magicItemsInStorage = inventoryManager.getMagicItemsFromLocalStorage();
+        if (magicItemsInStorage != null) {
+            inventoryManager.magicItems = magicItemsInStorage;
+        }
+
+        inventoryManager.refreshUI();
+
         inventoryManager.client = new tmi.Client({
             options: { debug: false },
             connection: { cluster: "aws", reconnect: true },
             channels: [inventoryManager.channel]
             //channels: ["noiseylobster13"]
-        })
+        });
+
         inventoryManager.client.connect();
+
         inventoryManager.client.on('chat', function (channel, user, message, self) {
             //if (user['username'] === "noiseylobster13") {
             if ((user['username'] === inventoryManager.channel || user.mod)) {
@@ -50,7 +61,7 @@ const inventoryManager = {
                     }
                 }
                 else if (user['username'].toLowerCase() === "streamlootsbot") {
-                //else {
+                    //else {
                     inventoryManager.magicItems.forEach(item => {
                         if (message.includes(item.name)) {
                             inventoryManager.addItemToInventory(item.name);
@@ -152,6 +163,31 @@ const inventoryManager = {
 
         return isMagicItem;
     },
+    saveMagicItemsInLocalStorage: function () {
+        localStorage.setItem(magicItemStorageKey, JSON.stringify(this.magicItems));
+    },
+    getMagicItemsFromLocalStorage: function () {
+        return JSON.parse(localStorage.getItem(magicItemStorageKey));
+    },
+    refreshUI: function () {
+        var potionInventoryID = "#potion-inventory";
+        var battleItemID = "#battle-item-inventory";
+
+        //clear the existing UI so we can repopulate it
+        $(potionInventoryID).empty();
+        $(battleItemID).empty();
+
+        //check magic items for any inventory to load into the UI
+        this.magicItems.forEach(item => {
+            var currentItemCategoryID = item.type == "potion" ? potionInventoryID : battleItemID;
+
+            if (item.amount > 0) {
+                $("#inventory " + currentItemCategoryID).append([
+                    { title: item.name, amount: item.amount }
+                ].map(this.itemTemplate).join(''));
+            }
+        });
+    },
     itemTemplate: ({ title, amount }) => `
     <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
         <div class="col-auto">${title} (${amount})</div>
@@ -161,25 +197,12 @@ const inventoryManager = {
         if (this.isMagicItem(itemName) && quantityToAdd > 0) {
             this.magicItems.forEach(item => {
                 if (item.name == itemName) {
-                    var isInitialPurchase = item.amount == 0;
                     item.amount += quantityToAdd;
-
-                    if (isInitialPurchase) {
-                        var categoryID = item.type == "potion" ? "#potion-inventory" : "#battle-item-inventory";
-
-                        $("#inventory " + categoryID).append([
-                            { title: itemName, amount: item.amount }
-                        ].map(this.itemTemplate).join(''));
-                    }
-                    else {
-                        var itemID = itemName.toLowerCase().replace(/ /g, "-");
-
-                        $("#" + itemID).replaceWith([
-                            { title: itemName, amount: item.amount }
-                        ].map(this.itemTemplate).join(''));
-                    }
                 }
             });
+
+            this.refreshUI();
+            this.saveMagicItemsInLocalStorage();
         }
     },
     removeItemFromInventory: function (itemName, quantityToRemove = 1) {
@@ -187,18 +210,11 @@ const inventoryManager = {
             this.magicItems.forEach(item => {
                 if (item.name == itemName) {
                     item.amount = Math.max(item.amount - quantityToRemove, 0);
-
-                    var itemID = item.name.toLowerCase().replace(/ /g, "-");
-                    if (item.amount > 0) {
-                        $("#" + itemID).replaceWith([
-                            { title: itemName, amount: item.amount }
-                        ].map(this.itemTemplate).join(''));
-                    }
-                    else {
-                        $("#" + itemID).remove();
-                    }
                 }
             });
+
+            this.refreshUI();
+            this.saveMagicItemsInLocalStorage();
         }
     },
     createNewItemType: function (itemName, itemType, initialAmount = 0) {
@@ -212,6 +228,9 @@ const inventoryManager = {
             if (initialAmount > 0) {
                 this.addItemToInventory(itemName, initialAmount);
             }
+            else {
+                this.saveMagicItemsInLocalStorage();
+            }
         }
     },
     removeItemType: function (itemName) {
@@ -219,13 +238,15 @@ const inventoryManager = {
 
         this.magicItems.forEach((item, itemIndex) => {
             if (item.name == itemName) {
-                this.removeItemFromInventory(item.name, item.amount);
                 indexToRemove = itemIndex;
             }
         });
 
         if (indexToRemove >= 0) {
             this.magicItems.splice(indexToRemove, 1);
+
+            this.refreshUI();
+            this.saveMagicItemsInLocalStorage();
         }
     },
     client: {},
