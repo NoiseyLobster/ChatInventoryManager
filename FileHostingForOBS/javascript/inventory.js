@@ -12,13 +12,13 @@ const inventoryManager = {
         inventoryManager.client = new tmi.Client({
             options: { debug: false },
             connection: { cluster: "aws", reconnect: true },
-            channels: [vote.channel]
+            channels: [inventoryManager.channel]
             //channels: ["noiseylobster13"]
         })
         inventoryManager.client.connect();
         inventoryManager.client.on('chat', function (channel, user, message, self) {
             //if (user['username'] === "noiseylobster13") {
-            if ((user['username'] === vote.channel || user.mod)) {
+            if ((user['username'] === inventoryManager.channel || user.mod)) {
                 if (message.toLowerCase().startsWith(chatCommands.commandPrefix)) {
                     //extract the command
                     var command = message.split(' ')[0];
