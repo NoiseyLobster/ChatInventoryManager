@@ -44,10 +44,10 @@ const inventoryManager = {
 
                     switch (command) {
                         case chatCommands.addToInventory:
-                            inventoryManager.addItemToInventory(itemName, quantity);
+                            inventoryManager.addItemToInventory(itemName, quantity ?? 1);
                             break;
                         case chatCommands.removeFromInventory:
-                            inventoryManager.removeItemFromInventory(itemName, quantity);
+                            inventoryManager.removeItemFromInventory(itemName, quantity ?? 1);
                             break;
                         case chatCommands.newPotionType:
                             inventoryManager.createNewItemType(itemName, "potion", quantity);
