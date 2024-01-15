@@ -1,8 +1,8 @@
 <h2>Inventory Manager Startup</h2>
 
-<p>The Inventory Manager is designed to work with the <a href="https://obsproject.com/kb/browser-source" target="_blank">OBS Browser Source</a>. First copy the contents of the <a href="https://github.com/NoiseyLobster/ChatInventoryManager/tree/master/FileHostingForOBS" target="_blank">FileHostingForOBS</a> folder to a local drive OBS can access or a publicly accessible web location and then target the index.html file at that location as the Browser Source.</p>
+<p>The Inventory Manager is designed to work with the <a href="https://obsproject.com/kb/browser-source" target="_blank">OBS Browser Source</a>. First, copy the contents of the <a href="https://github.com/NoiseyLobster/ChatInventoryManager/tree/master/FileHostingForOBS" target="_blank">FileHostingForOBS</a> folder to a local drive OBS can access or a publicly accessible web location. Then, target the index.html file at that location as the Browser Source.</p>
 
-<p>On startup the Inventory Manager will check the browser's <code>localStorage</code> for prior inventory history and will attempt to load that history for the current session if avaliable. The Inventory Manager will also connect to Twitch chat and begin listening for commands or Streamloots messages at this time.</p>
+<p>On startup, the Inventory Manager will check the browser's <code>localStorage</code> for prior inventory history and will attempt to load that history for the current session if avaliable. The Inventory Manager will also connect to Twitch chat and begin listening for commands or Streamloots messages at this time.</p>
 
 <h2>Twitch Chat Commands</h2>
 
