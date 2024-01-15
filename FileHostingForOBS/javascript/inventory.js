@@ -69,7 +69,7 @@ const inventoryManager = {
                     });
                 }
             }
-        })
+        });
     },
     magicItems: [
         {
@@ -187,10 +187,23 @@ const inventoryManager = {
                 ].map(this.itemTemplate).join(''));
             }
         });
+
+        //attach click listeners
+        $(".inventory-item").on("click", function() {
+            $(this).toggleClass("on-selected");
+            $(this).find(".vote").toggleClass("selected-vote").toggleClass("unselected-vote");
+
+            var voteCount = 1;
+            $(".selected-vote").each(function() {
+                $(this).html(voteCount);
+                voteCount++;
+            })
+        });
     },
     itemTemplate: ({ title, amount }) => `
     <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
-        <div class="col-auto">${title} (${amount})</div>
+        <div class="col-11">${title} (${amount})</div>
+        <div class="col-1 vote unselected-vote"></div>
     </div>
     `,
     addItemToInventory: function (itemName, quantityToAdd = 1) {

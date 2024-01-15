@@ -21,3 +21,17 @@ body,
 #inventory .row {
     width: 100%;
 }
+
+.on-selected {
+    background-color: #6db78e;
+    box-shadow: inset 2px 2px 2px #579271;
+}
+
+.vote {
+    color: #000;
+    font-weight: bold;
+}
+
+.unselected-vote {
+    display: none;
+}
