@@ -71,6 +71,99 @@ const inventoryManager = {
             }
         });
     },
+    refreshUI: function () {
+        var potionInventoryID = "#potion-inventory";
+        var battleItemID = "#battle-item-inventory";
+
+        //clear the existing UI so we can repopulate it
+        $(potionInventoryID).empty();
+        $(battleItemID).empty();
+
+        //check magic items for any inventory to load into the UI
+        this.magicItems.forEach(item => {
+            var currentItemCategoryID = item.type == "potion" ? potionInventoryID : battleItemID;
+
+            if (item.amount > 0) {
+                $("#inventory " + currentItemCategoryID).append([
+                    { title: item.name, amount: item.amount }
+                ].map(this.itemTemplate).join(''));
+            }
+        });
+
+        //attach click listeners
+        $(".inventory-item").on("click", function() {
+            $(this).toggleClass("on-selected");
+            $(this).find(".vote").toggleClass("selected-vote").toggleClass("unselected-vote");
+
+            var voteCount = 1;
+            $(".selected-vote").each(function() {
+                $(this).html(voteCount);
+                voteCount++;
+            })
+        });
+    },
+    itemTemplate: ({ title, amount }) => `
+    <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
+        <div class="col-11">${title} (${amount})</div>
+        <div class="col-1 vote unselected-vote"></div>
+    </div>
+    `,
+    addItemToInventory: function (itemName, quantityToAdd = 1) {
+        if (quantityToAdd > 0) {
+            this.magicItems.forEach(item => {
+                if (item.name == itemName) {
+                    item.amount += quantityToAdd;
+                }
+            });
+
+            this.refreshUI();
+            this.saveMagicItemsInLocalStorage();
+        }
+    },
+    removeItemFromInventory: function (itemName, quantityToRemove = 1) {
+        if (quantityToRemove > 0) {
+            this.magicItems.forEach(item => {
+                if (item.name == itemName) {
+                    item.amount = Math.max(item.amount - quantityToRemove, 0);
+                }
+            });
+
+            this.refreshUI();
+            this.saveMagicItemsInLocalStorage();
+        }
+    },
+    createNewItemType: function (itemName, itemType, initialAmount = 0) {
+        if (itemName != null && itemName != "" && itemType != null && itemType != "") {
+            this.magicItems.push({
+                "name": itemName,
+                "type": itemType,
+                "amount": 0
+            });
+
+            if (initialAmount > 0) {
+                this.addItemToInventory(itemName, initialAmount);
+            }
+            else {
+                this.saveMagicItemsInLocalStorage();
+            }
+        }
+    },
+    removeItemType: function (itemName) {
+        var indexToRemove = -1;
+
+        this.magicItems.forEach((item, itemIndex) => {
+            if (item.name == itemName) {
+                indexToRemove = itemIndex;
+            }
+        });
+
+        if (indexToRemove >= 0) {
+            this.magicItems.splice(indexToRemove, 1);
+
+            this.refreshUI();
+            this.saveMagicItemsInLocalStorage();
+        }
+    },
     magicItems: [
         {
             "name": "Potion of Chaos Magic",
@@ -150,117 +243,11 @@ const inventoryManager = {
         "Liminal Halite",
         "Nibiru Leaf"
     ],
-    isMagicItem: function (itemName) {
-        var isMagicItem = false;
-
-        if (itemName != null && itemName != "") {
-            this.magicItems.forEach(item => {
-                if (item.name == itemName) {
-                    isMagicItem = true;
-                }
-            });
-        }
-
-        return isMagicItem;
-    },
     saveMagicItemsInLocalStorage: function () {
         localStorage.setItem(magicItemStorageKey, JSON.stringify(this.magicItems));
     },
     getMagicItemsFromLocalStorage: function () {
         return JSON.parse(localStorage.getItem(magicItemStorageKey));
-    },
-    refreshUI: function () {
-        var potionInventoryID = "#potion-inventory";
-        var battleItemID = "#battle-item-inventory";
-
-        //clear the existing UI so we can repopulate it
-        $(potionInventoryID).empty();
-        $(battleItemID).empty();
-
-        //check magic items for any inventory to load into the UI
-        this.magicItems.forEach(item => {
-            var currentItemCategoryID = item.type == "potion" ? potionInventoryID : battleItemID;
-
-            if (item.amount > 0) {
-                $("#inventory " + currentItemCategoryID).append([
-                    { title: item.name, amount: item.amount }
-                ].map(this.itemTemplate).join(''));
-            }
-        });
-
-        //attach click listeners
-        $(".inventory-item").on("click", function() {
-            $(this).toggleClass("on-selected");
-            $(this).find(".vote").toggleClass("selected-vote").toggleClass("unselected-vote");
-
-            var voteCount = 1;
-            $(".selected-vote").each(function() {
-                $(this).html(voteCount);
-                voteCount++;
-            })
-        });
-    },
-    itemTemplate: ({ title, amount }) => `
-    <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
-        <div class="col-11">${title} (${amount})</div>
-        <div class="col-1 vote unselected-vote"></div>
-    </div>
-    `,
-    addItemToInventory: function (itemName, quantityToAdd = 1) {
-        if (this.isMagicItem(itemName) && quantityToAdd > 0) {
-            this.magicItems.forEach(item => {
-                if (item.name == itemName) {
-                    item.amount += quantityToAdd;
-                }
-            });
-
-            this.refreshUI();
-            this.saveMagicItemsInLocalStorage();
-        }
-    },
-    removeItemFromInventory: function (itemName, quantityToRemove = 1) {
-        if (this.isMagicItem(itemName) && quantityToRemove > 0) {
-            this.magicItems.forEach(item => {
-                if (item.name == itemName) {
-                    item.amount = Math.max(item.amount - quantityToRemove, 0);
-                }
-            });
-
-            this.refreshUI();
-            this.saveMagicItemsInLocalStorage();
-        }
-    },
-    createNewItemType: function (itemName, itemType, initialAmount = 0) {
-        if (itemName != null && itemName != "" && itemType != null && itemType != "") {
-            this.magicItems.push({
-                "name": itemName,
-                "type": itemType,
-                "amount": 0
-            });
-
-            if (initialAmount > 0) {
-                this.addItemToInventory(itemName, initialAmount);
-            }
-            else {
-                this.saveMagicItemsInLocalStorage();
-            }
-        }
-    },
-    removeItemType: function (itemName) {
-        var indexToRemove = -1;
-
-        this.magicItems.forEach((item, itemIndex) => {
-            if (item.name == itemName) {
-                indexToRemove = itemIndex;
-            }
-        });
-
-        if (indexToRemove >= 0) {
-            this.magicItems.splice(indexToRemove, 1);
-
-            this.refreshUI();
-            this.saveMagicItemsInLocalStorage();
-        }
     },
     client: {},
     channel: window.location.hash.slice(1).toLowerCase()

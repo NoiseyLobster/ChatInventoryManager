@@ -13,12 +13,12 @@ server.get('/', (req, res) => {
 
 server.get('/config.html', (req, res) => {
     res.sendFile(__dirname + "/panelExtension/panel.html");
-})
+});
 
 server.get('/panel.html', (req, res) => {
     res.sendFile(__dirname + "/panelExtension/panel.html");
-})
+});
 
 server.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
+    console.log(`Example app listening on port ${port}`);
+});
