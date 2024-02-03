@@ -119,6 +119,15 @@ const inventoryManager = {
         var potionInventoryID = "#potion-inventory";
         var battleItemID = "#battle-item-inventory";
 
+        //save the items being polled so they're not lost on the refresh
+        var currentPolledItems = [];
+        $('.inventory-item').each(function() { 
+             var isInCurrentPoll = $(this).find(".vote").hasClass("selected-vote");
+             if(isInCurrentPoll) {
+                currentPolledItems.push($(this).attr("id"));
+             }
+        });
+
         //clear the existing UI so we can repopulate it
         $(potionInventoryID).empty();
         $(battleItemID).empty();
@@ -145,6 +154,15 @@ const inventoryManager = {
                 voteCount++;
             })
         });
+
+        //restore the polling choices from before the refresh
+        $('.inventory-item').each(function() { 
+            var itemID = $(this).attr("id");
+            var isInCurrentPoll = currentPolledItems.includes(itemID);
+            if(isInCurrentPoll) {
+                $(this).click();
+            }
+       });
     },
     itemTemplate: ({ title, amount }) => `
     <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
