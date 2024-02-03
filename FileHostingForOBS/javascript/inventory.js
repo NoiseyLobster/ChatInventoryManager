@@ -8,6 +8,7 @@ const chatCommands = {
 }
 
 const magicItemStorageKey = "MAGIC_ITEM_STORAGE";
+const twitchUsernameStorageKey = "TWITCH_USERNAME_STORAGE_KEY";
 
 const inventoryManager = {
     init: () => {
@@ -17,19 +18,63 @@ const inventoryManager = {
         }
 
         inventoryManager.refreshUI();
+        inventoryManager.wireSettingsMenu();
+
+        var twitchUsername = inventoryManager.getTwitchChannelName();
+        if (twitchUsername == null || twitchUsername == "") {
+            $("#settings").show();
+            $("#username").focus();
+        }
+        else {
+            inventoryManager.connectToTwitchChat();
+        }
+
+    },
+    wireSettingsMenu: function () {
+        var twitchUsername = inventoryManager.getTwitchChannelName();
+        if (twitchUsername != null) {
+            $("#username").val(twitchUsername);
+        }
+
+        $("#settings-icon").on("click", function () {
+            $("#settings").show();
+        });
+
+        $("#close-settings").on("click", function () {
+            $("#settings").hide();
+        });
+
+        $("#show-username").on("click", function () {
+            $("#username").attr("type") == "text" ? $("#username").attr("type", "password") : $("#username").attr("type", "text");
+        });
+
+        $("#username-form").on("submit", function (e) {
+            e.preventDefault();
+
+            var username = $(this).find("#username").val();
+            inventoryManager.saveTwitchChannelName(username);
+            
+            inventoryManager.connectToTwitchChat();
+            $("#settings").hide();
+        });
+    },
+    connectToTwitchChat: function () {
+        //disconnect from any open connections first
+        if (inventoryManager.isClientConnected()) {
+            inventoryManager.client.disconnect();
+            inventoryManager.client = null;
+        }
 
         inventoryManager.client = new tmi.Client({
             options: { debug: false },
             connection: { cluster: "aws", reconnect: true },
-            channels: [inventoryManager.channel]
-            //channels: ["noiseylobster13"]
+            channels: [inventoryManager.getTwitchChannelName()]
         });
 
         inventoryManager.client.connect();
 
         inventoryManager.client.on('chat', function (channel, user, message, self) {
-            //if (user['username'] === "noiseylobster13") {
-            if ((user['username'] === inventoryManager.channel || user.mod)) {
+            if ((user['username'] === inventoryManager.getTwitchChannelName() || user.mod)) {
                 if (message.toLowerCase().startsWith(chatCommands.commandPrefix)) {
                     //extract the command
                     var command = message.split(' ')[0];
@@ -61,7 +106,6 @@ const inventoryManager = {
                     }
                 }
                 else if (user['username'].toLowerCase() === "streamlootsbot") {
-                    //else {
                     inventoryManager.magicItems.forEach(item => {
                         if (message.includes(item.name)) {
                             inventoryManager.addItemToInventory(item.name);
@@ -91,12 +135,12 @@ const inventoryManager = {
         });
 
         //attach click listeners
-        $(".inventory-item").on("click", function() {
+        $(".inventory-item").on("click", function () {
             $(this).toggleClass("on-selected");
             $(this).find(".vote").toggleClass("selected-vote").toggleClass("unselected-vote");
 
             var voteCount = 1;
-            $(".selected-vote").each(function() {
+            $(".selected-vote").each(function () {
                 $(this).html(voteCount);
                 voteCount++;
             })
@@ -249,6 +293,19 @@ const inventoryManager = {
     getMagicItemsFromLocalStorage: function () {
         return JSON.parse(localStorage.getItem(magicItemStorageKey));
     },
-    client: {},
-    channel: window.location.hash.slice(1).toLowerCase()
+    client: null,
+    isClientConnected: function () {
+        var isConnected = false;
+        if (this.client != null) {
+            isConnected = this.client.readyState().toLowerCase() == "open";
+        }
+
+        return isConnected;
+    },
+    saveTwitchChannelName: function (channelName) {
+        localStorage.setItem(twitchUsernameStorageKey, channelName);
+    },
+    getTwitchChannelName: function () {
+        return localStorage.getItem(twitchUsernameStorageKey);
+    }
 }

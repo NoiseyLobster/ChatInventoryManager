@@ -13,6 +13,40 @@ body,
     font-size: 22px;
 }
 
+#settings {
+    display: none;
+    height: 200px;
+    width: 250px;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #579271;
+    border: 5px solid #394d42;
+    border-radius: 10%;
+    box-shadow: 5px 5px 5px #579271;
+    padding: 10px;
+}
+
+#settings input,
+#close-settings {
+    margin-bottom: 10px;
+}
+
+#settings .input-group-append button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+#settings-icon {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    cursor: pointer;
+}
+
 #inventory {
     padding-left: 5px;
 }
