@@ -195,7 +195,7 @@ const inventoryManager = {
         }
     },
     createNewItemType: function (itemName, itemType, initialAmount = 0) {
-        if (itemName != null && itemName != "" && itemType != null && itemType != "") {
+        if (itemName && itemType && !this.magicItems.some(item => item.name === itemName)) {
             this.magicItems.push({
                 "name": itemName,
                 "type": itemType,
