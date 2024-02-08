@@ -12,11 +12,7 @@ const inventorySettingsStorageKey = "INVENTORY_SETTINGS_STORAGE";
 
 const inventoryManager = {
     init: () => {
-        var magicItemsInStorage = inventoryManager.getMagicItemsFromLocalStorage();
-        if (magicItemsInStorage) {
-            inventoryManager.magicItems = magicItemsInStorage;
-        }
-
+        inventoryManager.loadMagicItemsFromLocalStorage();
         inventoryManager.loadSettingsFromLocalStorage();
 
         inventoryManager.refreshUI();
@@ -321,8 +317,11 @@ const inventoryManager = {
     saveMagicItemsInLocalStorage: function () {
         localStorage.setItem(magicItemStorageKey, JSON.stringify(this.magicItems));
     },
-    getMagicItemsFromLocalStorage: function () {
-        return JSON.parse(localStorage.getItem(magicItemStorageKey));
+    loadMagicItemsFromLocalStorage: function () {
+        var magicItemsInStorage = JSON.parse(localStorage.getItem(magicItemStorageKey));         
+        if (magicItemsInStorage) {
+            inventoryManager.magicItems = magicItemsInStorage;
+        }
     },
     client: null,
     isClientConnected: function () {
