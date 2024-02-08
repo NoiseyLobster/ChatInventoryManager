@@ -10,13 +10,11 @@ body,
     opacity: 85%;
     color: #fff;
     font-family: 'Patrick Hand SC', cursive;
-    font-size: 22px;
 }
 
 #settings {
     display: none;
-    height: 200px;
-    width: 250px;
+    width: 280px;
     position: absolute;
     left: 0px;
     right: 0px;

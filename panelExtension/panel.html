@@ -16,10 +16,10 @@
 <body>
     <div id="container">
         <div id="inventory">
-            <div id="settings-icon"> 
+            <div id="settings-icon">
                 <i class="bi bi-gear"></i>
             </div>
-            
+
             <h2>Potions</h2>
             <div id="potion-inventory" style="padding-left: 15px; margin-bottom: 15px;">
             </div>
@@ -35,7 +35,7 @@
                     <h2 class="text-center">Settings</h2>
                 </div>
                 <div class="col-12">
-                    <form action="#" id="username-form">
+                    <form action="#" id="settings-form">
                         <label for="username">Twitch Username</label>
 
                         <div class="input-group">
@@ -46,7 +46,12 @@
                             </div>
                         </div>
 
-                        <input type="submit" class="btn btn-secondary" value="Save">
+                        <div class="form-group">
+                            <label for="font-size-setting">Font Size</label>
+                            <input type="number" class="form-control" id="font-size-setting">
+                        </div>
+
+                        <input type="submit" class="btn btn-secondary" value="Save Settings & Close">
                         <button class="btn btn-secondary" id="close-settings" type="button">Cancel</button>
                     </form>
                 </div>

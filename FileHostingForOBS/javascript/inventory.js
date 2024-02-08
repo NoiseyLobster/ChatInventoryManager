@@ -8,32 +8,37 @@ const chatCommands = {
 }
 
 const magicItemStorageKey = "MAGIC_ITEM_STORAGE";
-const twitchUsernameStorageKey = "TWITCH_USERNAME_STORAGE_KEY";
+const inventorySettingsStorageKey = "INVENTORY_SETTINGS_STORAGE";
 
 const inventoryManager = {
     init: () => {
         var magicItemsInStorage = inventoryManager.getMagicItemsFromLocalStorage();
-        if (magicItemsInStorage != null) {
+        if (magicItemsInStorage) {
             inventoryManager.magicItems = magicItemsInStorage;
         }
+
+        inventoryManager.loadSettingsFromLocalStorage();
 
         inventoryManager.refreshUI();
         inventoryManager.wireSettingsMenu();
 
-        var twitchUsername = inventoryManager.getTwitchChannelName();
-        if (twitchUsername == null || twitchUsername == "") {
-            $("#settings").show();
-            $("#username").focus();
+        if (inventoryManager.inventorySettings.username) {
+            inventoryManager.connectToTwitchChat();
         }
         else {
-            inventoryManager.connectToTwitchChat();
+            $("#settings").show();
+            $("#username").focus();
         }
 
     },
     wireSettingsMenu: function () {
-        var twitchUsername = inventoryManager.getTwitchChannelName();
-        if (twitchUsername != null) {
-            $("#username").val(twitchUsername);
+        if (this.inventorySettings.username) {
+            $("#username").val(this.inventorySettings.username);
+        }
+
+        if(this.inventorySettings.fontSize) {
+            $("#font-size-setting").val(this.inventorySettings.fontSize);
+            $("#inventory h2, #potion-inventory, #battle-item-inventory").css("font-size", this.inventorySettings.fontSize + "px");
         }
 
         $("#settings-icon").on("click", function () {
@@ -48,11 +53,15 @@ const inventoryManager = {
             $("#username").attr("type") == "text" ? $("#username").attr("type", "password") : $("#username").attr("type", "text");
         });
 
-        $("#username-form").on("submit", function (e) {
+        $("#settings-form").on("submit", function (e) {
             e.preventDefault();
 
-            var username = $(this).find("#username").val();
-            inventoryManager.saveTwitchChannelName(username);
+            inventoryManager.inventorySettings.username = $(this).find("#username").val();
+            inventoryManager.inventorySettings.fontSize = $(this).find("#font-size-setting").val();
+
+            $("#inventory h2, #potion-inventory, #battle-item-inventory").css("font-size", inventoryManager.inventorySettings.fontSize + "px");
+            
+            inventoryManager.saveSettingsInLocalStorage(inventoryManager.inventorySettings);
             
             inventoryManager.connectToTwitchChat();
             $("#settings").hide();
@@ -68,13 +77,13 @@ const inventoryManager = {
         inventoryManager.client = new tmi.Client({
             options: { debug: false },
             connection: { cluster: "aws", reconnect: true },
-            channels: [inventoryManager.getTwitchChannelName()]
+            channels: [this.inventorySettings.username]
         });
 
         inventoryManager.client.connect();
 
         inventoryManager.client.on('chat', function (channel, user, message, self) {
-            if ((user['username'] === inventoryManager.getTwitchChannelName() || user.mod)) {
+            if ((user['username'] === inventoryManager.inventorySettings.username || user.mod)) {
                 if (message.toLowerCase().startsWith(chatCommands.commandPrefix)) {
                     //extract the command
                     var command = message.split(' ')[0];
@@ -305,6 +314,10 @@ const inventoryManager = {
         "Liminal Halite",
         "Nibiru Leaf"
     ],
+    inventorySettings: {
+        "username" : "",
+        "fontSize": 22
+    },
     saveMagicItemsInLocalStorage: function () {
         localStorage.setItem(magicItemStorageKey, JSON.stringify(this.magicItems));
     },
@@ -320,10 +333,16 @@ const inventoryManager = {
 
         return isConnected;
     },
-    saveTwitchChannelName: function (channelName) {
-        localStorage.setItem(twitchUsernameStorageKey, channelName);
+    saveSettingsInLocalStorage: function () {
+        localStorage.setItem(inventorySettingsStorageKey, JSON.stringify(this.inventorySettings));
     },
-    getTwitchChannelName: function () {
-        return localStorage.getItem(twitchUsernameStorageKey);
+    loadSettingsFromLocalStorage: function () {
+        var inventorySettings = JSON.parse(localStorage.getItem(inventorySettingsStorageKey));
+        if(inventorySettings?.username) {
+            inventoryManager.inventorySettings.username = inventorySettings.username;
+        }
+        if(inventorySettings?.fontSize) {
+            inventoryManager.inventorySettings.fontSize = inventorySettings.fontSize;
+        }
     }
 }

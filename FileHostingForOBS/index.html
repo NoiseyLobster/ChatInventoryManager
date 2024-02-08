@@ -35,7 +35,7 @@
                     <h2 class="text-center">Settings</h2>
                 </div>
                 <div class="col-12">
-                    <form action="#" id="username-form">
+                    <form action="#" id="settings-form">
                         <label for="username">Twitch Username</label>
 
                         <div class="input-group">
@@ -46,7 +46,12 @@
                             </div>
                         </div>
 
-                        <input type="submit" class="btn btn-secondary" value="Save">
+                        <div class="form-group">
+                            <label for="font-size-setting">Font Size</label>
+                            <input type="number" class="form-control" id="font-size-setting">
+                        </div>
+
+                        <input type="submit" class="btn btn-secondary" value="Save Settings & Close">
                         <button class="btn btn-secondary" id="close-settings" type="button">Cancel</button>
                     </form>
                 </div>
