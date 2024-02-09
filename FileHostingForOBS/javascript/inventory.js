@@ -170,7 +170,7 @@ const inventoryManager = {
        });
     },
     itemTemplate: ({ title, amount }) => `
-    <div class="row inventory-item" id="${title.toLowerCase().replace(/ /g, "-")}">
+    <div class="row inventory-item w-100" id="${title.toLowerCase().replace(/ /g, "-")}">
         <div class="col-11">${title} (${amount})</div>
         <div class="col-1 vote unselected-vote"></div>
     </div>
