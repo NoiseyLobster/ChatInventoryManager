@@ -15,8 +15,8 @@ const inventoryManager = {
         inventoryManager.loadMagicItemsFromLocalStorage();
         inventoryManager.loadSettingsFromLocalStorage();
 
-        inventoryManager.refreshUI();
         inventoryManager.wireSettingsMenu();
+        inventoryManager.refreshUI();
 
         if (inventoryManager.inventorySettings.username) {
             inventoryManager.connectToTwitchChat();
@@ -34,7 +34,6 @@ const inventoryManager = {
 
         if(this.inventorySettings.fontSize) {
             $("#font-size-setting").val(this.inventorySettings.fontSize);
-            $("#inventory h2, #potion-inventory, #battle-item-inventory").css("font-size", this.inventorySettings.fontSize + "px");
         }
 
         $("#settings-icon").on("click", function () {
@@ -55,10 +54,9 @@ const inventoryManager = {
             inventoryManager.inventorySettings.username = $(this).find("#username").val();
             inventoryManager.inventorySettings.fontSize = $(this).find("#font-size-setting").val();
 
-            $("#inventory h2, #potion-inventory, #battle-item-inventory").css("font-size", inventoryManager.inventorySettings.fontSize + "px");
-            
             inventoryManager.saveSettingsInLocalStorage(inventoryManager.inventorySettings);
-            
+            inventoryManager.refreshUI();
+
             inventoryManager.connectToTwitchChat();
             $("#settings").hide();
         });
@@ -126,11 +124,11 @@ const inventoryManager = {
 
         //save the items being polled so they're not lost on the refresh
         var currentPolledItems = [];
-        $('.inventory-item').each(function() { 
-             var isInCurrentPoll = $(this).find(".vote").hasClass("selected-vote");
-             if(isInCurrentPoll) {
+        $('.inventory-item').each(function() {
+            var isInCurrentPoll = $(this).find(".vote").hasClass("selected-vote");
+            if(isInCurrentPoll) {
                 currentPolledItems.push($(this).attr("id"));
-             }
+            }
         });
 
         //clear the existing UI so we can repopulate it
@@ -161,13 +159,32 @@ const inventoryManager = {
         });
 
         //restore the polling choices from before the refresh
-        $('.inventory-item').each(function() { 
+        $('.inventory-item').each(function() {
             var itemID = $(this).attr("id");
             var isInCurrentPoll = currentPolledItems.includes(itemID);
             if(isInCurrentPoll) {
                 $(this).click();
             }
-       });
+        });
+
+        //set the correct font size from settings
+        if (this.inventorySettings.fontSize) {
+            $("#inventory h2, #potion-inventory, #battle-item-inventory").css("font-size", this.inventorySettings.fontSize + "px");
+        }
+
+        //correct for container overflow if it exists 
+        var totalInventoryHeight = 0;
+        $('.inner-container').each(function() {
+            totalInventoryHeight += $(this).outerHeight(true);
+        });
+
+        var hasOverflow = totalInventoryHeight > window.innerHeight;
+        if (hasOverflow) {
+            $("#inventory").addClass("d-inline-flex");
+        }
+        else {
+            $("#inventory").removeClass("d-inline-flex");
+        }
     },
     itemTemplate: ({ title, amount }) => `
     <div class="row inventory-item w-100" id="${title.toLowerCase().replace(/ /g, "-")}">
@@ -318,7 +335,7 @@ const inventoryManager = {
         localStorage.setItem(magicItemStorageKey, JSON.stringify(this.magicItems));
     },
     loadMagicItemsFromLocalStorage: function () {
-        var magicItemsInStorage = JSON.parse(localStorage.getItem(magicItemStorageKey));         
+        var magicItemsInStorage = JSON.parse(localStorage.getItem(magicItemStorageKey));
         if (magicItemsInStorage) {
             inventoryManager.magicItems = magicItemsInStorage;
         }
